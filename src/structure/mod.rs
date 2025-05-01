@@ -26,8 +26,8 @@ pub mod tree {
         }
 
         pub fn new_nodelink(value: i32) -> NodeLink {
-            let currentnode = Node::new(value);
-            let currentlink = Rc::new(RefCell::new(currentnode));
+            let currentnode: Node = Node::new(value);
+            let currentlink: Rc<RefCell<Node>> = Rc::new(RefCell::new(currentnode));
             currentlink
         }
 
@@ -48,26 +48,26 @@ pub mod tree {
 
         //private interface
         fn new_with_parent(parent: &NodeLink, value: i32) -> NodeLink {
-            let mut currentnode = Node::new(value);
+            let mut currentnode: Node = Node::new(value);
             currentnode.add_parent(Rc::<RefCell<Node>>::downgrade(parent));
-            let currentlink = Rc::new(RefCell::new(currentnode));
+            let currentlink: Rc<RefCell<Node>> = Rc::new(RefCell::new(currentnode));
             currentlink
         }
 
         fn new_from_node(node: Node) -> NodeLink {
-            let currentlink = Rc::new(RefCell::new(node));
+            let currentlink: Rc<RefCell<Node>> = Rc::new(RefCell::new(node));
             currentlink
         }
 
         //add new left child, set the parent to current_node_link
         pub fn add_left_child(&mut self, current_node_link: &NodeLink, value: i32) {
-            let new_node = Node::new_with_parent(current_node_link, value);
+            let new_node: Rc<RefCell<Node>> = Node::new_with_parent(current_node_link, value);
             self.left = Some(new_node);
         }
 
         //add new right child, set the parent to current_node_link
         pub fn add_right_child(&mut self, current_node_link: &NodeLink, value: i32) {
-            let new_node = Node::new_with_parent(current_node_link, value);
+            let new_node: Rc<RefCell<Node>> = Node::new_with_parent(current_node_link, value);
             self.right = Some(new_node);
         }
 
@@ -129,12 +129,12 @@ pub mod tree {
          * This function will return the node that match value
          * Let's assume the tree won't have any value duplicates
          */
-        pub fn get_node_by_value(&self, value: i32) -> Option<NodeLink>{
+        pub fn get_node_by_value(&self, value: i32) -> Option<NodeLink> {
             //check current node value
             if self.value == value {
                 //create clone of NodeLink
-                let node = self.clone();
-                let nodelink = Rc::new(RefCell::new(node));
+                let node: Node = self.clone();
+                let nodelink: Rc<RefCell<Node>> = Rc::new(RefCell::new(node));
                 return Rc::<RefCell<Node>>::downgrade(&nodelink).upgrade();
             }
             //go left if exist
@@ -157,31 +157,25 @@ pub mod tree {
          */
         pub fn get_node_by_full_property(&self, node: &NodeLink) -> Option<NodeLink> {
             //check current node value
-            let nodevalue = node.borrow().value;
-            let check_parent_eq = Node::is_node_match_both_weak(
-                node.borrow().parent.clone(),
-                self.parent.clone(),
-            );
-            let check_left_child_eq = Node::is_node_match_both_strong(
-                node.borrow().left.clone(),
-                self.left.clone(),
-            );
-            let check_right_child_eq = Node::is_node_match_both_strong(
-                node.borrow().right.clone(),
-                self.right.clone(),
-            );
+            let nodevalue: i32 = node.borrow().value;
+            let check_parent_eq: bool =
+                Node::is_node_match_both_weak(node.borrow().parent.clone(), self.parent.clone());
+            let check_left_child_eq: bool =
+                Node::is_node_match_both_strong(node.borrow().left.clone(), self.left.clone());
+            let check_right_child_eq: bool =
+                Node::is_node_match_both_strong(node.borrow().right.clone(), self.right.clone());
             if self.value == nodevalue
                 && check_parent_eq
                 && check_left_child_eq
                 && check_right_child_eq
             {
                 return Some(self.get_nodelink_copy());
-            } else{
+            } else {
                 //recurse deeper if not found
                 //recurse to left
-                if let Some(left_subtree) = &self.left{
+                if let Some(left_subtree) = &self.left {
                     return left_subtree.borrow().get_node_by_full_property(node);
-                } else if let Some(right_subtree) = &self.right{
+                } else if let Some(right_subtree) = &self.right {
                     //recurse to right
                     return right_subtree.borrow().get_node_by_full_property(node);
                 }
@@ -197,17 +191,17 @@ pub mod tree {
          */
         pub fn discard_node_by_value(&mut self, value: i32) -> bool {
             //check current node value
-            if  self.value == value{
+            if self.value == value {
                 //cut off parent connection
                 self.parent = None;
                 return true;
             } else if let Some(left_node) = &self.left {
-                let result_flag = left_node.borrow_mut().discard_node_by_value(value);
+                let result_flag: bool = left_node.borrow_mut().discard_node_by_value(value);
                 //cut this child connection
                 self.left = None;
                 return result_flag;
             } else if let Some(right_node) = &self.right {
-                let result_flag = right_node.borrow_mut().discard_node_by_value(value);
+                let result_flag: bool = right_node.borrow_mut().discard_node_by_value(value);
                 self.right = None;
                 return result_flag;
             }
@@ -219,7 +213,7 @@ pub mod tree {
          * assume when enter the function the current node isn't a null
          */
         pub fn count_nodes(&self) -> i32 {
-            let mut count = 0;
+            let mut count: i32 = 0;
             let nodelink: Rc<RefCell<Node>> = Node::new_from_node(self.clone());
             count = Node::count_nodes_by_nodelink(&nodelink, count);
             return count;
@@ -274,7 +268,8 @@ pub mod tree {
             //traverse to parent if not a root node
             if nodelink.borrow().parent.is_some() {
                 //upgrade to strong
-                let strong_parent = Node::upgrade_weak_to_strong(nodelink.borrow().parent.clone());
+                let strong_parent: Option<Rc<RefCell<Node>>> =
+                    Node::upgrade_weak_to_strong(nodelink.borrow().parent.clone());
                 //check from which child are we
                 if let Some(sparent) = strong_parent {
                     //check if the left fits nodelink value (we're coming from the left)
@@ -282,7 +277,9 @@ pub mod tree {
                         .borrow()
                         .left
                         .as_ref()
-                        .is_some_and(|x| x.borrow().value == nodelink.borrow().value)
+                        .is_some_and(|x: &Rc<RefCell<Node>>| {
+                            x.borrow().value == nodelink.borrow().value
+                        })
                     {
                         //return the right node
                         return sparent.clone().borrow().right.clone();
