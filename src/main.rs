@@ -160,8 +160,8 @@ fn test_binary_search_tree() {
         // After careful consideration and much thinking, it turns out that I'm really really not supposed to integrate this logic into the transplant() function.
         // Specifically, this is because the CLRS book says "Note that TRANSPLANT does not attempt to update v.left and v.right; doing so is the responsibility of TRANSPLANT’s caller."
         // Which means, that this kind of necessary operation should be manually handled in the function caller's scope.
-        // the tree_delete() function also seems to already do this as well
-        // so whatever
+        // the tree_delete() function also seems to already do this as well.
+        // so whatever.
         if let Some(ref left_children) = node_9.borrow().left {
             left_children.borrow_mut().parent = Some(Rc::downgrade(&node_9));
         }
@@ -199,6 +199,7 @@ fn test_binary_search_tree() {
     print_graph(&rootlink);
 
     // test tree_delete_with_key() function by first defining a Vec<i32> that consists of the numbers of the nodes that I want to delete.
+    // The numbers of the nodes that I want to delete consists of various test cases and whatnot.
     let keys_to_delete: Vec<i32> = vec![
         1, // leaf node, is a left children to its parent (2) || FINALLY WORKS AFTER CODE DEBUGGING AND REWRITING, previously it used to still show 1 on the generated image, which doesn't make any sense
         16, // leaf node, is a left children to its parent (17) || FINALLY WORKS AFTER CODE DEBUGGING AND REWRITING, previously it used to still show 16 on the generated image, which also doesn't make sense
@@ -207,7 +208,7 @@ fn test_binary_search_tree() {
         2, // has a left child, is itself a left child to its parent (3) // FINALLY WORKS AFTER CODE DEBUGGING AND REWRITING
         10, // has a right child, is itself a right child to its parent (10) // PERFECTLY WORKS JUST FINE OUT OF THE BOX, this is the same case as with the deletion of node 7 above, which also works perfectly fine.
         3, // has both a left and a right child, is itself a left child to its parent, which is (6) // FINALLY WORKS AFTER CODE DEBUGGING AND REWRITING
-        20, // has both a left and a right child, but is itself a right child to its parent, which is (18) // Works, but the original node of 21 still shows up on image, but node 20 is "replaced" by node 21. So node 21 still has a right child to node 21???????
+        20, // has both a left and a right child, but is itself a right child to its parent, which is (18) // FINALLY WORKS NOW AFTER CODE DEBUGGING AND REWRITING
         25, // has a right child, is itself a left child to its parent, which is node 30.
         30, // after deleting 25, node 30 would still have a left child, is itself a right child to its parent, which is node 21.
     ];
