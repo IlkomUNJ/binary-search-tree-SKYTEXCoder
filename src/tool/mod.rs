@@ -31,7 +31,7 @@ fn node_id(node: &BstNodeLink) -> usize {
 /// # Details
 /// This private function technically works by performing a standard Breadth-First Search (BFS) traversal to traverse the entire tree using VecDeque<T>.
 /// If BufWriter<File> is provided as the writer parameter and graphviz is installed and configured, you can generate a PNG image file off of the generated .dot file
-/// by executing "dot -Tpng {file_name}.dot -o {file_name}.png"
+/// by executing "dot -Tpng {file_name}.dot -o {file_name}.png" in your terminal.
 fn write_graphviz_dot_notation<W: Write>(root: &BstNodeLink, mut writer: W) -> std::io::Result<()> {
     writeln!(writer, "digraph BinaryTree {{")?;
     let mut queue: VecDeque<std::rc::Rc<std::cell::RefCell<crate::structure::bst::BstNode>>> =

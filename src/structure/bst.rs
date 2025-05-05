@@ -296,10 +296,10 @@ impl BstNode {
         return Some(y_node.clone().unwrap());
     }
 
-    pub fn tree_successor_quiz(x_node: &BstNodeLink) -> BstNodeLink {
+    pub fn tree_successor_quiz(x_node: &BstNodeLink) -> Option<BstNodeLink> {
         let x_borrow: std::cell::Ref<'_, BstNode> = x_node.borrow();
         if let Some(ref right_node) = x_borrow.right {
-            return right_node.borrow().minimum_quiz();
+            return Some(right_node.borrow().minimum_quiz());
         } else {
             let mut current_node: Rc<RefCell<BstNode>> = x_node.clone();
             let mut optional_parent: Option<Rc<RefCell<BstNode>>> = x_borrow
@@ -310,14 +310,36 @@ impl BstNode {
                 let parent_borrow: std::cell::Ref<'_, BstNode> = parent_rc_pointer.borrow();
                 if let Some(ref left_node) = parent_borrow.left {
                     if Rc::ptr_eq(left_node, &current_node) {
-                        return parent_rc_pointer.clone();
+                        return Some(parent_rc_pointer.clone());
                     }
                 }
                 current_node = parent_rc_pointer.clone();
                 optional_parent = parent_borrow.parent.clone().and_then(|weak| weak.upgrade());
             }
         }
-        return x_node.clone();
+        return Some(x_node.clone());
+    }
+
+    pub fn tree_predecessor_attempt(x_node: &BstNodeLink) -> Option<BstNodeLink> {
+        let x_borrow: std::cell::Ref<'_, BstNode> = x_node.borrow();
+        if let Some(ref left_node) = x_borrow.left {
+            return Some(left_node.borrow().maximum_quiz());
+        } else {
+            let mut current_node: Rc<RefCell<BstNode>> = x_node.clone();
+            let mut optional_parent: Option<Rc<RefCell<BstNode>>> =
+                BstNode::upgrade_weak_to_strong(current_node.borrow().parent.clone());
+            while let Some(parent_rc_pointer) = optional_parent {
+                let parent_borrow: std::cell::Ref<'_, BstNode> = parent_rc_pointer.borrow();
+                if let Some(ref right_child) = parent_rc_pointer.borrow().right {
+                    if Rc::ptr_eq(right_child, &current_node) {
+                        return Some(parent_rc_pointer.clone());
+                    }
+                }
+                current_node = parent_rc_pointer.clone();
+                optional_parent = BstNode::upgrade_weak_to_strong(parent_borrow.parent.clone());
+            }
+        }
+        return Some(x_node.clone());
     }
 
     /// Inserts a new node with the given key into the BST.
@@ -517,5 +539,44 @@ impl BstNode {
             return true;
         }
         return false;
+    }
+
+    pub fn inorder_tree_walk(optional_node_link: &Option<BstNodeLink>) {
+        if let Some(ref bst_node_link) = optional_node_link {
+            let bst_node_link_immutable_borrow: std::cell::Ref<'_, BstNode> =
+                bst_node_link.borrow();
+            BstNode::inorder_tree_walk(&bst_node_link_immutable_borrow.left);
+            if let Some(key) = bst_node_link_immutable_borrow.key {
+                println!("{}", key);
+            } else {
+            }
+            BstNode::inorder_tree_walk(&bst_node_link_immutable_borrow.right);
+        } else {
+            return;
+        }
+    }
+
+    pub fn preorder_tree_walk(optional_node_link: &Option<BstNodeLink>) {
+        if let Some(ref bst_node_link) = optional_node_link {
+            let bst_node_link_immutable_borrow: std::cell::Ref<'_, BstNode> =
+                bst_node_link.borrow();
+            if let Some(key) = bst_node_link_immutable_borrow.key {
+                println!("{}", key);
+            }
+            BstNode::preorder_tree_walk(&bst_node_link_immutable_borrow.left);
+            BstNode::preorder_tree_walk(&bst_node_link_immutable_borrow.right);
+        }
+    }
+
+    pub fn postorder_tree_walk(optional_node_link: &Option<BstNodeLink>) {
+        if let Some(ref bst_node_link) = optional_node_link {
+            let bst_node_link_immutable_borrow: std::cell::Ref<'_, BstNode> =
+                bst_node_link.borrow();
+            BstNode::postorder_tree_walk(&bst_node_link_immutable_borrow.left);
+            BstNode::postorder_tree_walk(&bst_node_link_immutable_borrow.right);
+            if let Some(key) = bst_node_link_immutable_borrow.key {
+                println!("{}", key);
+            }
+        }
     }
 }
